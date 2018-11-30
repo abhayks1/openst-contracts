@@ -256,6 +256,31 @@ contract TokenRules is Organized {
     }
 
     /**
+     * @dev Transfers from the msg.sender to all beneficiary
+     *      accounts corresponding amounts
+     *
+     * @param _transferTo List of addresses to transfer.
+     * @param _transferAmount List of amounts to transfer.
+     */
+    function processTransfers(
+        address _transferTo,
+        uint256 _transferAmount
+    )
+        external
+    {
+        require(
+            allowedTransfers[msg.sender],
+            "Transfers from the address are not allowed."
+        );
+
+        token.transferFrom(
+            msg.sender,
+            _transferTo,
+            _transferAmount
+        );
+    }
+
+    /**
      * @notice Registers a constraint to check globally before
      *         executing transfers.
      *

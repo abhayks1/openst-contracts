@@ -97,7 +97,7 @@ contract('TokenHolder::executeRule', async (accounts) => {
 
       // Here, the total tokens that can be transferred is 200 for a transaction.
       // But, we are generating executable data to transfer 250 tokens.
-      const transferFromExecutable = await ExecuteRuleUtils.generateTransferFromExecutable(
+      const transferFromExecutable = await ExecuteRuleUtils.getTransferRulePayload(
         tokenHolder.address,
         to,
         new BN(amountTransferred),

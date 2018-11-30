@@ -136,7 +136,7 @@ module.exports.createEIP20Token = async () => {
 /**
  * It generates executable data for 'TransferFrom' method.
  */
-module.exports.generateTransferFromExecutable = async (from, to, amount) => {
+module.exports.getTransferRulePayload = async (from, to, amount) => {
 
   return web3.eth.abi.encodeFunctionCall(
     {
@@ -159,6 +159,29 @@ module.exports.generateTransferFromExecutable = async (from, to, amount) => {
       ]
     },
     [from, to, amount]
+  );
+
+}
+
+module.exports.getTokenRuleTransferPayload = async (to, amount) => {
+
+  return web3.eth.abi.encodeFunctionCall(
+    {
+
+      name: 'processTransfers',
+      type: 'function',
+      inputs: [
+        {
+          type: 'address',
+          name: '_transferTo'
+        },
+        {
+          type: 'uint256',
+          name: '_transferAmount'
+        }
+      ]
+    },
+    [to, amount]
   );
 
 }
@@ -259,5 +282,4 @@ module.exports.getExecuteRuleExTxData = async (
 
   return { msgHash, rsv };
 }
-
 
