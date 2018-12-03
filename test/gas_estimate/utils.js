@@ -15,6 +15,7 @@
 const TokenRules = artifacts.require('TokenRules'),
   TokenHolder = artifacts.require('TokenHolder'),
   TransferRule = artifacts.require('TransferRule'),
+  TransfersRule = artifacts.require('TransfersRule'),
   EIP20TokenMock = artifacts.require('EIP20TokenMock'),
   Organization = artifacts.require('Organization'),
   EthUtils = require('ethereumjs-util');
@@ -36,13 +37,25 @@ module.exports.setup = async (accountProvider) => {
 
   const transferRule = await this.transferRule(tokenRules.address);
 
-  const ruleName = 'transferRule';
-  const ruleAbi = `Rule abi of ${ruleName}`;
+  const transfersRule = await this.transfersRule(tokenRules.address);
+
+  const transferRuleName = 'transferRule';
+  const transferRuleAbi = `Rule abi of ${transferRuleName}`;
 
   await tokenRules.registerRule(
-    ruleName,
+    transferRuleName,
     transferRule.address,
-    ruleAbi,
+    transferRuleAbi,
+    { from: worker },
+  );
+
+  const transfersRuleName = 'transfersRule';
+  const transfersRuleAbi = `Rule abi of ${transfersRuleName}`;
+
+  await tokenRules.registerRule(
+    transfersRuleName,
+    transfersRule.address,
+    transfersRuleAbi,
     { from: worker },
   );
 
@@ -64,6 +77,7 @@ module.exports.setup = async (accountProvider) => {
     organization,
     tokenRules,
     transferRule,
+    transfersRule,
     tokenHolder,
     wallet1,
   };
@@ -96,6 +110,16 @@ module.exports.tokenRules = async (organization, token) => {
 module.exports.transferRule = async (tokenRules) => {
 
   return (await TransferRule.new(tokenRules));
+
+};
+
+/**
+ * It returns an instance of TransfersRule contract.
+ *
+ */
+module.exports.transfersRule = async (tokenRules) => {
+
+  return (await TransfersRule.new(tokenRules));
 
 };
 
@@ -163,6 +187,36 @@ module.exports.getTransferRulePayload = async (from, to, amount) => {
 
 }
 
+/**
+ * It generates executable data for 'TransfersFrom' method.
+ */
+module.exports.getTransfersRulePayload = async (from, tos, amounts) => {
+
+  return web3.eth.abi.encodeFunctionCall(
+    {
+
+      name: 'transfersFrom',
+      type: 'function',
+      inputs: [
+        {
+          type: 'address',
+          name: '_from'
+        },
+        {
+          type: 'address[]',
+          name: '_tos'
+        },
+        {
+          type: 'uint256[]',
+          name: '_amounts'
+        }
+      ]
+    },
+    [from, tos, amounts]
+  );
+
+}
+
 module.exports.generateTokenRuleTransferFromExecutable = async (to, amount) => {
 
   return web3.eth.abi.encodeFunctionCall(
@@ -182,6 +236,29 @@ module.exports.generateTokenRuleTransferFromExecutable = async (to, amount) => {
       ]
     },
     [to, amount]
+  );
+
+}
+
+module.exports.generateTokenRuleTransfersFromExecutable = async (tos, amounts) => {
+
+  return web3.eth.abi.encodeFunctionCall(
+    {
+
+      name: 'processTransfers',
+      type: 'function',
+      inputs: [
+        {
+          type: 'address[]',
+          name: '_transfersTo'
+        },
+        {
+          type: 'uint256[]',
+          name: '_transfersAmount'
+        }
+      ]
+    },
+    [tos, amounts]
   );
 
 }

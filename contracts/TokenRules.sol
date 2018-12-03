@@ -256,8 +256,7 @@ contract TokenRules is Organized {
     }
 
     /**
-     * @dev Transfer from the msg.sender to beneficiary account respective
-     *      amount
+     * @dev Transfer from the msg.sender to beneficiary account.
      *
      * @param _transferTo Addresses of to transfer.
      * @param _transferAmount Amount to transfer.
@@ -278,6 +277,37 @@ contract TokenRules is Organized {
             _transferTo,
             _transferAmount
         );
+    }
+
+    /**
+     * @dev Transfer from the msg.sender to beneficiary accounts.
+     *
+     * @param _transfersTo Addresses of to transfer.
+     * @param _transfersAmount Amounts to transfer.
+     */
+    function processTransfers(
+        address[] _transfersTo,
+        uint256[] _transfersAmount
+    )
+        external
+    {
+        require(
+            allowedTransfers[msg.sender],
+            "Transfers from the address are not allowed."
+        );
+
+        require(
+            _transfersTo.length == _transfersAmount.length,
+            "'to' and 'amount' transfer arrays' lengths are not equal."
+        );
+
+        for(uint256 i = 0; i < _transfersTo.length; ++i) {
+            token.transferFrom(
+                msg.sender,
+                _transfersTo[i],
+                _transfersAmount[i]
+            );
+        }
     }
 
     /**

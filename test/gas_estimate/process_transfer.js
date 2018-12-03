@@ -195,7 +195,9 @@ contract('TokenHolder::executeRule', async (accounts) => {
         EthUtils.bufferToHex(rsv.s),
       );
 
-      await testLibUtils.logResponse(transactionResponse,"ExecuteRule single transfer - TokenRule processTransfer");
+      assert.equal(transactionResponse.receipt.status, true);
+
+      await testLibUtils.logResponse(transactionResponse,"ExecuteRule single transfer - TokenRule processTransfer: ");
 
       let toBalance = (await eip20TokenMock.balanceOf(to));
       // Verify 'to' address balance
