@@ -256,13 +256,13 @@ contract TokenRules is Organized {
     }
 
     /**
-     * @dev Transfers from the msg.sender to all beneficiary
-     *      accounts corresponding amounts
+     * @dev Transfer from the msg.sender to beneficiary account respective
+     *      amount
      *
-     * @param _transferTo List of addresses to transfer.
-     * @param _transferAmount List of amounts to transfer.
+     * @param _transferTo Addresses of to transfer.
+     * @param _transferAmount Amount to transfer.
      */
-    function processTransfers(
+    function processTransfer(
         address _transferTo,
         uint256 _transferAmount
     )

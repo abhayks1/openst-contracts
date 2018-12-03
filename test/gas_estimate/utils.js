@@ -163,12 +163,12 @@ module.exports.getTransferRulePayload = async (from, to, amount) => {
 
 }
 
-module.exports.getTokenRuleTransferPayload = async (to, amount) => {
+module.exports.generateTokenRuleTransferFromExecutable = async (to, amount) => {
 
   return web3.eth.abi.encodeFunctionCall(
     {
 
-      name: 'processTransfers',
+      name: 'processTransfer',
       type: 'function',
       inputs: [
         {

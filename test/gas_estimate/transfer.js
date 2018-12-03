@@ -38,9 +38,9 @@
  *            - 'to' address balance.
  */
 const EthUtils = require('ethereumjs-util'),
-  utils = require('../../test_lib/utils'),
-  AccountsProvider = utils.AccountProvider,
-  ExecuteRuleUtils = require('./utils'),
+  testLibUtils = require('./../test_lib/utils'),
+  AccountsProvider = testLibUtils.AccountProvider,
+  Utils = require('./utils'),
   BN = require('bn.js');
 
 contract('TokenHolder::executeRule', async (accounts) => {
@@ -58,17 +58,17 @@ contract('TokenHolder::executeRule', async (accounts) => {
 
   describe('ExecuteRule integration test', async () => {
 
-    it('Validate the setup', async () => {
+    it('Validates the setup', async () => {
 
       accountProvider = new AccountsProvider(accounts);
 
-      ( {
+      ({
         tokenHolder,
-        wallet1,
-        eip20TokenMock,
-        transferRule,
-        tokenRules,
-      } = await ExecuteRuleUtils.setup(accountProvider));
+          wallet1,
+          eip20TokenMock,
+          transferRule,
+          tokenRules,
+      } = await Utils.setup(accountProvider));
 
       await eip20TokenMock.setBalance(tokenHolder.address, totalBalance);
 
@@ -84,7 +84,7 @@ contract('TokenHolder::executeRule', async (accounts) => {
 
     });
 
-    it('Authorize an ephemeral key', async () => {
+    it('Authorizes an ephemeral key', async () => {
 
       ephemeralPrivateKey1 = '0xa8225c01ceeaf01d7bc7c1b1b929037bd4050967c5730c0b854263121b8399f3';
       ephemeralKeyAddress1 = '0x62502C4DF73935D0D10054b0Fb8cC036534C6fb0';
@@ -121,13 +121,13 @@ contract('TokenHolder::executeRule', async (accounts) => {
       let nextAvailableNonce = currentNonce.toNumber() + 1;
       const to = accountProvider.get();
 
-      const transferFromExecutable = await ExecuteRuleUtils.getTransferRulePayload(
+      const transferFromExecutable = await Utils.getTransferRulePayload(
         tokenHolder.address,
         to,
         new BN(amountTransferred),
       );
 
-      const { rsv } = await ExecuteRuleUtils.getExecuteRuleExTxData(
+      const { rsv } = await Utils.getExecuteRuleExTxData(
         tokenHolder.address,
         transferRule.address,
         transferFromExecutable,
@@ -144,12 +144,13 @@ contract('TokenHolder::executeRule', async (accounts) => {
         EthUtils.bufferToHex(rsv.s),
       );
 
-      await utils.logResponse(transactionResponse,"ExecuteRule single transfer");
+      assert.equal(transactionResponse.receipt.status, true);
+
+      await testLibUtils.logResponse(transactionResponse,"ExecuteRule single transfer");
 
       // Verify 'to' address balance
       assert.equal(
-        (await eip20TokenMock.balanceOf(to)),
-        amountTransferred,
+        (await eip20TokenMock.balanceOf(to)), amountTransferred,
       );
 
       // Verify tokenholder balance
@@ -167,26 +168,23 @@ contract('TokenHolder::executeRule', async (accounts) => {
       );
 
       let currentNonce = keyData.nonce,
-        amountTransferred = 50;
+        amountTransferred = 50,
+        nextAvailableNonce = currentNonce.toNumber() + 1;
 
-      let nextAvailableNonce = currentNonce.toNumber() + 1;
       const to = accountProvider.get();
 
-      const tokenRuleTransferFromExecutable = await ExecuteRuleUtils.getTokenRuleTransferPayload(
+      const tokenRuleTransferFromExecutable = await Utils.generateTokenRuleTransferFromExecutable(
         to,
         new BN(amountTransferred),
       );
 
-      const { rsv } = await ExecuteRuleUtils.getExecuteRuleExTxData(
+      const { rsv } = await Utils.getExecuteRuleExTxData(
         tokenHolder.address,
         tokenRules.address,
         tokenRuleTransferFromExecutable,
         new BN(nextAvailableNonce),
         ephemeralPrivateKey1,
       );
-
-      let toBalance = await eip20TokenMock.balanceOf(to);
-      assert.equal(toBalance.cmp(new BN(amountTransferred)), -1,);
 
       let transactionResponse = await tokenHolder.executeRule(
         tokenRules.address,
@@ -197,25 +195,23 @@ contract('TokenHolder::executeRule', async (accounts) => {
         EthUtils.bufferToHex(rsv.s),
       );
 
-      await utils.logResponse(transactionResponse,"Tokenrule processTransfer execution");
+      await testLibUtils.logResponse(transactionResponse,"ExecuteRule single transfer - TokenRule processTransfer");
 
-      //console.log("tokenrule processTransfers transactionResponse:", transactionResponse);
-
-      toBalance = (await eip20TokenMock.balanceOf(to));
+      let toBalance = (await eip20TokenMock.balanceOf(to));
       // Verify 'to' address balance
-      assert.equal(toBalance.cmp(new BN(amountTransferred)), 0,);
+      assert.equal(
+        toBalance.cmp(new BN(amountTransferred)),
+        0,
+      );
+
     });
 
     it('Total gas used', async () => {
 
-      utils.printGasStatistics();
+      testLibUtils.printGasStatistics();
 
     });
 
   });
 
 });
-
-
-
-
